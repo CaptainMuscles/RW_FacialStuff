@@ -196,23 +196,83 @@ namespace FacialStuff
             if (portrait || renderBody && !this.CompAnimator.HideShellLayer || !renderBody
              && !Controller.settings.HideShellWhileRoofed && Controller.settings.IgnoreRenderBody)
             {
+                Mesh bodyMesh = this.GetPawnMesh(true, portrait);
+
                 foreach (ApparelGraphicRecord apparelGraphicRecord in this.Graphics.apparelGraphics)
                 {
-                    if (apparelGraphicRecord.sourceApparel.def.apparel.LastLayer != ApparelLayerDefOf.Shell)
+                    if (apparelGraphicRecord.sourceApparel.def.apparel.LastLayer == ApparelLayerDefOf.Shell)
                     {
-                        continue;
+                        Material material3 = apparelGraphicRecord.graphic.MatAt(this.BodyFacing);
+                        material3 = this.Graphics.flasher.GetDamagedMat(material3);
+                        GenDraw.DrawMeshNowOrLater(bodyMesh, vector, quat, material3, portrait);
+
+                        // possible fix for phasing apparel
+                        vector.y += Offsets.YOffsetInterval_Clothes;
                     }
+                    else if (RenderSpecialLayer(apparelGraphicRecord.sourceApparel))
+                    {
+                        Vector3 utlityVector = vector;
+                        // First counteract the body offset to get the root pos
+                        if (this.BodyFacing == Rot4.North)
+                            utlityVector.y -= Offsets.YOffset_Head;
+                        else
+                            utlityVector.y -= Offsets.YOffset_Shell;
 
-                    Mesh bodyMesh = this.GetPawnMesh(true, portrait);
-                    Material material3 = apparelGraphicRecord.graphic.MatAt(this.BodyFacing);
-                    material3 = this.Graphics.flasher.GetDamagedMat(material3);
-                    GenDraw.DrawMeshNowOrLater(bodyMesh, vector, quat, material3, portrait);
+                        // Now apply the utility offset
+                        utlityVector.y += ((this.BodyFacing == Rot4.South) ? this.GetPostShellOffset() : (27f / 980f));
+                        //utlityVector.y += this.GetPostShellOffset();
 
-                    // possible fix for phasing apparel
-                    vector.y += Offsets.YOffsetInterval_Clothes;
+                        Material original4 = apparelGraphicRecord.graphic.MatAt(this.BodyFacing);
+                        original4 = OverrideMaterialIfNeeded(original4, this.Pawn, portrait);
+                        if (apparelGraphicRecord.sourceApparel.def.apparel.wornGraphicData != null)
+                        {
+                            Vector2 vector3 = apparelGraphicRecord.sourceApparel.def.apparel.wornGraphicData.BeltOffsetAt(this.BodyFacing, this.Pawn.story.bodyType);
+                            Vector2 vector4 = apparelGraphicRecord.sourceApparel.def.apparel.wornGraphicData.BeltScaleAt(this.Pawn.story.bodyType);
+                            Matrix4x4 matrix = Matrix4x4.Translate(utlityVector) * Matrix4x4.Rotate(quat) * Matrix4x4.Translate(new Vector3(vector3.x, 0f, vector3.y)) * Matrix4x4.Scale(new Vector3(vector4.x, 1f, vector4.y));
+                            GenDraw.DrawMeshNowOrLater_NewTemp(bodyMesh, matrix, original4, portrait);
+                        }
+                        else
+                        {
+                            GenDraw.DrawMeshNowOrLater(bodyMesh, vector, quat, original4, portrait);
+                        }
+                    }
                 }
             }
         }
+
+        private static bool RenderSpecialLayer(Apparel apparel)
+        {
+            if (apparel.def.apparel.LastLayer.IsUtilityLayer)
+                return RenderAsPack(apparel);
+
+            return (apparel.def.apparel.LastLayer != ApparelLayerDefOf.Overhead && apparel.def.apparel.LastLayer.drawOrder > ApparelLayerDefOf.Shell.drawOrder);
+        }
+
+        private static bool RenderAsPack(Apparel apparel)
+        {
+            if (apparel.def.apparel.LastLayer.IsUtilityLayer)
+            {
+                if (apparel.def.apparel.wornGraphicData != null)
+                {
+                    return apparel.def.apparel.wornGraphicData.renderUtilityAsPack;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private Material OverrideMaterialIfNeeded(Material original, Pawn pawn, bool portrait = false)
+        {
+            Material baseMat = ((!portrait && pawn.IsInvisible()) ? InvisibilityMatPool.GetInvisibleMat(original) : original);
+            return this.Graphics.flasher.GetDamagedMat(baseMat);
+        }
+
+        private float GetPostShellOffset()
+        {
+            List<ApparelGraphicRecord> list = this.Graphics.apparelGraphics.Where((ApparelGraphicRecord a) => a.sourceApparel.def.apparel.LastLayer.drawOrder >= ApparelLayerDefOf.Shell.drawOrder).ToList();
+            return (list.Count != 0) ? (3f / 980f / (float)list.Count) : 0f;
+        }
+
 
         public override void DrawBody(
         PawnWoundDrawer woundDrawer,
