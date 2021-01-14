@@ -186,10 +186,15 @@ namespace FacialStuff.Harmony
 
             Pawn pawn = graphics.pawn;
 
+            if (Controller.settings.UseVanillaPawnRendererForAllNonHumans && pawn.kindDef.race.defName != "Human")
+            {
+                //Log.Message("Using vanilla renderer for " + pawn);
+                return true;
+            }
+
             if (!pawn.RaceProps.Humanlike && !Controller.settings.UsePaws)
             {
                 return true;
-
             }
 
             if (!graphics.AllResolved)

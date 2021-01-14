@@ -55,6 +55,8 @@
   <Settings.UseHeadRotatorTooltip>Enables pawns to look at each other while socially interacting or being curious.</Settings.UseHeadRotatorTooltip>
   <Settings.UseNastyGrin>Use nasty grin</Settings.UseNastyGrin>
   <Settings.UseNastyGrinTooltip>Adds a nasty grin to the pawn when extremely happy.</Settings.UseNastyGrinTooltip>
+  
+  <Settings.UseVanillaPawnRendererForAllNonHumans>Use Vanilla Pawn Renderer for Non-humans</Settings.UseVanillaPawnRendererForAllNonHumans>
 
   <FacialStuffEditor.CannotUseNoFacePawn>{0} can't use this. Humans only.</FacialStuffEditor.CannotUseNoFacePawn>
   <FacialStuffEditor.CannotUseShouldNotRender>{0} can't use this. Too cute.</FacialStuffEditor.CannotUseShouldNotRender>

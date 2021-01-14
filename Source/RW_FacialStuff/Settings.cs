@@ -55,6 +55,8 @@ namespace FacialStuff
 
         private bool showRoyalHeadgear = true;
 
+        private bool _useVanillaPawnRendererForAllNonHumans = false;
+
         Vector2 scrollPosition;
         float viewHeight;
         #endregion Private Fields
@@ -106,6 +108,8 @@ namespace FacialStuff
 
         public bool Develop => this.develop;
         public bool ShowRoyalHeadgear => this.showRoyalHeadgear;
+
+        public bool UseVanillaPawnRendererForAllNonHumans => this._useVanillaPawnRendererForAllNonHumans;
 
         #endregion Public Properties
 
@@ -209,6 +213,11 @@ namespace FacialStuff
                 "Settings.UseCaching".Translate(),
                 ref this._useCaching,
                 "Settings.UseCachingTooltip".Translate());
+
+            list.CheckboxLabeled(
+                "Settings.UseVanillaPawnRendererForAllNonHumans".Translate(),
+                ref this._useVanillaPawnRendererForAllNonHumans);
+            
 
             list.NewColumn();
 
@@ -381,6 +390,8 @@ namespace FacialStuff
             Scribe_Values.Look(ref this._layerInPrivateRoom, "layerInPrivateRoom");
             Scribe_Values.Look(ref this._layerInBed, "layerInBed");
             Scribe_Values.Look(ref this._layerInOwnedBed, "layerInOwnedBed");
+
+            Scribe_Values.Look(ref this._useVanillaPawnRendererForAllNonHumans, "useVanillaPawnRendererForAllNonHumans"); 
         }
 
         #endregion Public Methods
